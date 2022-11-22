@@ -1,0 +1,41 @@
+version: "3.7"
+services:
+  laravel-php:
+    build: 
+      context: . 
+    environment:
+      # LaravelのDB接続情報
+      - DB_CONNECTION=mysql
+      - DB_HOST=laravel-php-db
+      - DB_PORT=3306
+      - DB_DATABASE=app
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+    container_name: laravel-php
+    # 設定ファイルとソースをマウント
+    volumes:
+      - "./html/:/var/www/html/"
+      - "./config/xdebug-local.ini:/usr/local/etc/php/conf.d/xdebug-local.ini"
+    # ローカルの8080をコンテナの80に設定
+    ports:
+      - "8080:80"
+    # host.docker.internalでローカルホストを参照する
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  laravel-db:
+    image: mysql:8.0
+    container_name: laravel-php-db
+    environment:
+      MYSQL_DATABASE: 'app'
+      MYSQL_ROOT_PASSWORD: 'root'
+    # パスワードでのログインを許可
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - '3306:3306'
+    volumes:
+      # laravel-dbという名前のボリュームを使用する
+      - laravel-db:/var/lib/mysql
+
+volumes:
+  laravel-db:
